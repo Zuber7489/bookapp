@@ -96,52 +96,42 @@
             return;
         }
         
-        // In production, you would send this to your backend
-        // For now, we'll just show a success message
-        console.log('Form submitted:', formData);
-        
-        // Show success message
-        showToast('Message sent successfully! We\'ll be in touch soon.');
-        
-        // Reset form
-        contactForm.reset();
-        
-        // In WordPress, you can integrate this with:
-        // 1. WordPress AJAX: wp_ajax_handle_contact_form
-        // 2. Contact Form 7 plugin
-        // 3. WPForms plugin
-        // 4. Custom PHP handler
-        
-        // Example AJAX call (uncomment and modify for WordPress):
-        /*
-        fetch('/wp-admin/admin-ajax.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: new URLSearchParams({
-                action: 'handle_contact_form',
-                name: formData.name,
-                email: formData.email,
-                organization: formData.organization,
-                message: formData.message,
-                nonce: wpAjax.nonce // Add nonce for security
+        // WordPress AJAX integration
+        if (typeof jimVieiraAjax !== 'undefined') {
+            // WordPress AJAX call
+            fetch(jimVieiraAjax.ajax_url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    action: 'jim_vieira_contact_form',
+                    name: formData.name,
+                    email: formData.email,
+                    organization: formData.organization,
+                    message: formData.message,
+                    nonce: jimVieiraAjax.nonce
+                })
             })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showToast('Message sent successfully! We\'ll be in touch soon.');
-                contactForm.reset();
-            } else {
-                showToast('Failed to send message. Please try again.', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showToast('An error occurred. Please try again later.', 'error');
-        });
-        */
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.data);
+                    contactForm.reset();
+                } else {
+                    showToast(data.data, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('An error occurred. Please try again later.', 'error');
+            });
+        } else {
+            // Fallback for non-WordPress environments
+            console.log('Form submitted:', formData);
+            showToast('Message sent successfully! We\'ll be in touch soon.');
+            contactForm.reset();
+        }
     });
     
     // Toast Notification System
